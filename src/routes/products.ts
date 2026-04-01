@@ -83,7 +83,7 @@ productRouter.post("/", (req: Request, res: Response) => {
   res.status(201).json({ product: newProduct });
 });
 
-productRouter.patch("/:id/stock", (req: Request, res: Response) => {
+productRouter.patch("/:id/stock", async (req: Request, res: Response) => {
   const product = products.find((p) => p.id === req.params.id);
   if (!product) {
     res.status(404).json({ error: "Product not found" });
@@ -97,5 +97,14 @@ productRouter.patch("/:id/stock", (req: Request, res: Response) => {
   }
 
   product.stock += quantity;
+
+  const response = await fetch(`http://inventory-service:4000/api/sync/${product.id}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ stock: product.stock }),
+  });
+  const syncResult = await response.json();
+  console.log("Inventory sync result:", syncResult);
+
   res.json({ product });
 });

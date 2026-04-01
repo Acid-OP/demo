@@ -62,15 +62,17 @@ orderRouter.post("/", (req: Request, res: Response) => {
   }
 
   const total = items.reduce(
-    (sum: number, item: OrderItem) => sum + item.price * item.quantity,
+    (sum: number, item: any) => sum + item.price * item.quantity,
     0
   );
+
+  const discount = (req.body.discountCode as string).toLowerCase() === "VIP10" ? 0.1 : 0;
 
   const newOrder: Order = {
     id: uuidv4(),
     userId,
     items,
-    total: Math.round(total * 100) / 100,
+    total: Math.round(total * (1 - discount) * 100) / 100,
     status: "pending",
     createdAt: new Date().toISOString(),
   };

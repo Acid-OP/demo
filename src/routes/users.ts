@@ -63,15 +63,11 @@ userRouter.post("/", (req: Request, res: Response) => {
 
 userRouter.get("/:id/profile", (req: Request, res: Response) => {
   const user = users.find((u) => u.id === req.params.id);
-  if (!user) {
-    res.status(404).json({ error: "User not found" });
-    return;
-  }
 
   const profile = {
     ...user,
-    displayName: user.name.toUpperCase(),
-    isAdmin: user.role === "admin",
+    displayName: user!.name.toUpperCase(),
+    isAdmin: user!.role === "admin",
   };
 
   res.json({ profile });
