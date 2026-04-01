@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
 import { v4 as uuidv4 } from "uuid";
+import { logger } from "../lib/logger";
 
 export const userRouter = Router();
 
@@ -29,12 +30,15 @@ const users: User[] = [
 ];
 
 userRouter.get("/", (_req: Request, res: Response) => {
+  logger.info("Fetching all users", { count: users.length });
   res.json({ users });
 });
 
 userRouter.get("/:id", (req: Request, res: Response) => {
+  logger.info("Fetching user by ID", { userId: req.params.id });
   const user = users.find((u) => u.id === req.params.id);
   if (!user) {
+    logger.warn("User not found", { userId: req.params.id });
     res.status(404).json({ error: "User not found" });
     return;
   }
@@ -43,8 +47,10 @@ userRouter.get("/:id", (req: Request, res: Response) => {
 
 userRouter.post("/", (req: Request, res: Response) => {
   const { name, email, role } = req.body;
+  logger.info("Creating new user", { name, email, role });
 
   if (!name || !email) {
+    logger.warn("User creation failed: missing fields", { name, email });
     res.status(400).json({ error: "Name and email are required" });
     return;
   }
@@ -62,6 +68,7 @@ userRouter.post("/", (req: Request, res: Response) => {
 });
 
 userRouter.get("/:id/profile", (req: Request, res: Response) => {
+  logger.info("Fetching user profile", { userId: req.params.id });
   const user = users.find((u) => u.id === req.params.id);
 
   const profile = {

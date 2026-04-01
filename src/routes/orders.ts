@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
 import { v4 as uuidv4 } from "uuid";
+import { logger } from "../lib/logger";
 
 export const orderRouter = Router();
 
@@ -41,6 +42,7 @@ const orders: Order[] = [
 ];
 
 orderRouter.get("/", (_req: Request, res: Response) => {
+  logger.info("Fetching all orders", { count: orders.length });
   res.json({ orders });
 });
 
@@ -55,8 +57,10 @@ orderRouter.get("/:id", (req: Request, res: Response) => {
 
 orderRouter.post("/", (req: Request, res: Response) => {
   const { userId, items } = req.body;
+  logger.info("Creating new order", { userId, itemCount: items?.length, discountCode: req.body.discountCode });
 
   if (!userId || !items || !Array.isArray(items) || items.length === 0) {
+    logger.warn("Order creation failed: missing fields", { userId, items });
     res.status(400).json({ error: "userId and items are required" });
     return;
   }
@@ -82,8 +86,10 @@ orderRouter.post("/", (req: Request, res: Response) => {
 });
 
 orderRouter.patch("/:id/status", (req: Request, res: Response) => {
+  logger.info("Updating order status", { orderId: req.params.id, newStatus: req.body.status });
   const order = orders.find((o) => o.id === req.params.id);
   if (!order) {
+    logger.warn("Order not found for status update", { orderId: req.params.id });
     res.status(404).json({ error: "Order not found" });
     return;
   }

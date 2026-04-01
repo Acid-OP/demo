@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
 import { v4 as uuidv4 } from "uuid";
+import { logger } from "../lib/logger";
 
 export const productRouter = Router();
 
@@ -43,6 +44,7 @@ const products: Product[] = [
 ];
 
 productRouter.get("/", (req: Request, res: Response) => {
+  logger.info("Fetching products", { category: req.query.category || "all" });
   const { category } = req.query;
 
   if (category) {
@@ -84,8 +86,10 @@ productRouter.post("/", (req: Request, res: Response) => {
 });
 
 productRouter.patch("/:id/stock", async (req: Request, res: Response) => {
+  logger.info("Updating product stock", { productId: req.params.id, quantity: req.body.quantity });
   const product = products.find((p) => p.id === req.params.id);
   if (!product) {
+    logger.warn("Product not found for stock update", { productId: req.params.id });
     res.status(404).json({ error: "Product not found" });
     return;
   }
@@ -97,6 +101,7 @@ productRouter.patch("/:id/stock", async (req: Request, res: Response) => {
   }
 
   product.stock += quantity;
+  logger.info("Stock updated, syncing with inventory service", { productId: product.id, newStock: product.stock });
 
   const response = await fetch(`http://inventory-service:4000/api/sync/${product.id}`, {
     method: "POST",
