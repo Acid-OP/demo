@@ -103,13 +103,17 @@ productRouter.patch("/:id/stock", async (req: Request, res: Response) => {
   product.stock += quantity;
   logger.info("Stock updated, syncing with inventory service", { productId: product.id, newStock: product.stock });
 
-  const response = await fetch(`http://inventory-service:4000/api/sync/${product.id}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ stock: product.stock }),
-  });
-  const syncResult = await response.json();
-  console.log("Inventory sync result:", syncResult);
+  try {
+    const response = await fetch(`http://inventory-service:4000/api/sync/${product.id}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ stock: product.stock }),
+    });
+    const syncResult = await response.json();
+    console.log("Inventory sync result:", syncResult);
+  } catch (err) {
+    logger.warn("Inventory sync failed, continuing without sync", { productId: product.id, error: String(err) });
+  }
 
   res.json({ product });
 });
