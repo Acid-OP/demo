@@ -27,10 +27,6 @@ app.use("/api/users", userRouter);
 app.use("/api/orders", orderRouter);
 app.use("/api/products", productRouter);
 
-app.get("/debug-sentry", function mainHandler(_req, _res) {
-  throw new Error("My first Sentry error!");
-});
-
 Sentry.setupExpressErrorHandler(app);
 
 app.listen(PORT, () => {
