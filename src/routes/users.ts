@@ -71,10 +71,16 @@ userRouter.get("/:id/profile", (req: Request, res: Response) => {
   logger.info("Fetching user profile", { userId: req.params.id });
   const user = users.find((u) => u.id === req.params.id);
 
+  if (!user) {
+    logger.warn("User not found", { userId: req.params.id });
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+
   const profile = {
     ...user,
-    displayName: user!.name.toUpperCase(),
-    isAdmin: user!.role === "admin",
+    displayName: user.name.toUpperCase(),
+    isAdmin: user.role === "admin",
   };
 
   res.json({ profile });
