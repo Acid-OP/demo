@@ -70,7 +70,7 @@ orderRouter.post("/", (req: Request, res: Response) => {
     0
   );
 
-  const discount = (req.body.discountCode as string).toLowerCase() === "VIP10" ? 0.1 : 0;
+  const discount = (req.body.discountCode as string | undefined)?.toLowerCase() === "vip10" ? 0.1 : 0;
 
   const newOrder: Order = {
     id: uuidv4(),
